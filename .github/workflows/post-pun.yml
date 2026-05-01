@@ -1,0 +1,30 @@
+name: Post Pun to Mastodon
+
+on:
+  schedule:
+    - cron: '0 8 * * *'
+    - cron: '0 12 * * *'
+    - cron: '0 17 * * *'
+    - cron: '0 21 * * *'
+  workflow_dispatch:
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Post random pun
+        env:
+          MASTODON_TOKEN: ${{ secrets.MASTODON_TOKEN }}
+        run: |
+          PUN=$(python3 -c "
+          import json, random
+          with open('puns.json') as f:
+              puns = json.load(f)
+          print(random.choice(puns))
+          ")
+          curl -X POST "https://defcon.social/api/v1/statuses" \
+            -H "Authorization: Bearer $MASTODON_TOKEN" \
+            -F "status=$PUN"
